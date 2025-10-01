@@ -5,6 +5,7 @@ import javax.swing.table.DefaultTableModel;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List; 
 
 public class ExpenseTrackerView extends JFrame {
@@ -88,48 +89,42 @@ public class ExpenseTrackerView extends JFrame {
   
   }
 
-  public void refreshTable(List<Transaction> transactions) {
-      // model.setRowCount(0);
-      model.setRowCount(0);
-      int rowNum = model.getRowCount();
-      double totalCost=0;
-      for(Transaction t : transactions) {
-        totalCost+=t.getAmount();
-      }
-  
-      // Add rows from transactions list
-      for(Transaction t : transactions) {
-        model.addRow(new Object[]{rowNum+=1,t.getAmount(), t.getCategory(), t.getTimestamp()});
+  // Return an immutable view (immutability on getter)
+  public List<Transaction> getTransactions() {
+    // defensive copy + unmodifiable
+    return Collections.unmodifiableList(new ArrayList<>(transactions));
+  }
 
-      }
-      Object[] totalRow = {"Total", null, null, totalCost};
-      model.addRow(totalRow);
-  
-      // Fire table update
-      transactionsTable.updateUI();
-  
-    }  
+  private void refreshTable() {
+    model.setRowCount(0);
+    int rowNum = 0;
+    double totalCost = 0;
+
+    for (Transaction t : transactions) {
+      totalCost += t.getAmount();
+    }
+
+    for (Transaction t : transactions) {
+      model.addRow(new Object[]{++rowNum, t.getAmount(), t.getCategory(), t.getTimestamp()});
+    }
+
+    model.addRow(new Object[]{"Total", null, null, totalCost});
+
+    // Prefer revalidate/repaint to updateUI()
+    transactionsTable.revalidate();
+    transactionsTable.repaint();
+  }  
 
   public void refresh() {
-
-    // Get transactions from model
-    List<Transaction> transactions = getTransactions();
-  
-    // Pass to view
-    refreshTable(transactions);
-  
+    refreshTable();
   }
 
-  public List<Transaction> getTransactions() {
-    return transactions;
-  }
-  
   public void addTransaction(Transaction t) {
     transactions.add(t);
-    getTableModel().addRow(new Object[]{t.getAmount(), t.getCategory(), t.getTimestamp()});
+    // remove direct model mutation to avoid double-adding / inconsistency
+    // getTableModel().addRow(new Object[]{t.getAmount(), t.getCategory(), t.getTimestamp()});
     refresh();
   }
-  
 
 
   // Other view methods

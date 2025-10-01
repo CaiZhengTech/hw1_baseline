@@ -1,16 +1,21 @@
-
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 public class Transaction {
 
-  private double amount;
-  private String category;
-  private String timestamp;
+  private final double amount;
+  private final String category;
+  private final String timestamp;
 
   public Transaction(double amount, String category) {
+    // Optional: basic validation to keep the object always-valid
+    if (category == null || category.trim().isEmpty()) {
+      throw new IllegalArgumentException("category cannot be empty");
+    }
+    if (amount < 0) {
+      throw new IllegalArgumentException("amount cannot be negative");
+    }
+
     this.amount = amount;
     this.category = category;
     this.timestamp = generateTimestamp();
@@ -20,16 +25,8 @@ public class Transaction {
     return amount;
   }
 
-  public void setAmount(double amount) {
-    this.amount = amount;
-  }
-
   public String getCategory() {
     return category;
-  }
-
-  public void setCategory(String category) {
-    this.category = category; 
   }
   
   public String getTimestamp() {
@@ -37,8 +34,7 @@ public class Transaction {
   }
 
   private String generateTimestamp() {
-    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");  
+    SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
     return sdf.format(new Date());
   }
-
 }
